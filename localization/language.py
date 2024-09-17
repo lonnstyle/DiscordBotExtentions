@@ -18,7 +18,10 @@ class language():
         self.pref = self.pref.get("language", "zh-hant")
         logger.debug(f'[init] language preference set: {self.pref}')
 
-    def langpref(self):
+    def langpref(self, lang=None):
+        if lang and lang in ["zh-hant", "zh-hans", "en"]:
+            lang = lang.replace("-", "_")
+            return getattr(self, lang)
         if self.pref == 'zh-hant':
             return self.zh_hant
         elif self.pref == 'zh-hans':

@@ -13,11 +13,10 @@ from log import logger
 
 from .const import AVAILABLE_LANGUAGES
 
-lang = lang.langpref()['mobile_export']
+_lang = lang.langpref()['mobile_export']
 
 dirname = os.path.dirname(__file__)
 logger = logger.getLogger('mobileExportParser')
-
 
 glyphs = [
     '<DT_GAS>',
@@ -162,8 +161,9 @@ class MobileExportParser():
         self.solnodes = {}
 
         categories = ['ExportRelicArcane', 'ExportResources', 'ExportWeapons', 'ExportWarframes',
-                      'ExportCustoms', 'ExportUpgrades','ExportFlavour', 'ExportKeys']
+                      'ExportCustoms', 'ExportUpgrades', 'ExportFlavour', 'ExportKeys']
         for language in AVAILABLE_LANGUAGES:
+            _lang = lang.langpref(language)['mobile_export']
             _items = []
             _blueprints = []
             _locations = []
@@ -200,7 +200,6 @@ class MobileExportParser():
                 # print uniqueName
                 self.__add_item(language, item)
 
-
             for location in _locations:
                 if 'name' not in location or 'uniqueName' not in location:
                     continue
@@ -214,9 +213,9 @@ class MobileExportParser():
             for blueprint in _blueprints:
                 self.__add_blueprint(language, blueprint)
 
-
         # self.sortie = lang['sortie']
-        self.mission = lang['mission']
+
+        self.mission = _lang['mission']
 
         print()
         print('Finished Update')
@@ -237,14 +236,15 @@ class MobileExportParser():
 
     def __add_blueprint(self, language, item):
         uniq_name = item['uniqueName']
+        _lang = lang.langpref(language)['mobile_export']
 
         if uniq_name not in self.manifest_data:
             self.manifest_data[uniq_name] = {}
 
         result = item['resultType']
-        if result in self.manifest_data:            
+        if result in self.manifest_data:
             item = self.manifest_data[uniq_name]
-            name = self.manifest_data[result][language]['item_name']+' ' + lang['blueprint']
+            name = self.manifest_data[result][language]['item_name'] + ' ' + _lang['blueprint']
 
             item[language] = {
                 'item_name': name
@@ -254,10 +254,9 @@ class MobileExportParser():
         for _lang in AVAILABLE_LANGUAGES:
             if _lang not in item:
                 return
-            
-        print('', end='\x1b[2K\r')
-        print(f'Added blueprint {item[language]["item_name"]}',end='\r', flush=True)
 
+        print('', end='\x1b[2K\r')
+        print(f'Added blueprint {item[language]["item_name"]}', end='\r', flush=True)
 
     def __add_item(self, lang, item):
         """
