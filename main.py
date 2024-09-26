@@ -65,7 +65,7 @@ class MenuView(View):
         self.commands = commands
         self.page = 1
         self.commands_len = len(self.commands)
-        self.ttl_page = math.ceil(self.commands_len/HELP_MENU_FIELDS)
+        self.ttl_page = math.ceil(self.commands_len / HELP_MENU_FIELDS)
 
     @button(label='◀️', custom_id='previous_page')
     async def previous_page(self, interaction: Interaction, button: Button):
@@ -120,13 +120,13 @@ def gen_help_menu(commands, page=1):
     command_types = [discord.ext.commands.Command, discord.ext.commands.HybridCommand]
     if type(commands) not in command_types:
         fields = 0
-        start = (page-1)*HELP_MENU_FIELDS
-        end = min(len(commands), page*HELP_MENU_FIELDS-1)
+        start = (page - 1) * HELP_MENU_FIELDS
+        end = min(len(commands), page * HELP_MENU_FIELDS - 1)
         for command in list(commands)[start:end]:
-            if command.brief != None:
+            if command.brief is not None:
                 embed.add_field(name=f"{jdata['command_prefix']}{command.name}", value=command.brief, inline=True)
             fields += 1
-            embed.set_footer(text=lang['help.embed.footer'].format(command_prefix=jdata['command_prefix'], page=page, total=math.ceil(len(commands)/HELP_MENU_FIELDS)))
+            embed.set_footer(text=lang['help.embed.footer'].format(command_prefix=jdata['command_prefix'], page=page, total=math.ceil(len(commands) / HELP_MENU_FIELDS)))
         return embed
     else:
         aliases = commands.name
@@ -201,7 +201,7 @@ async def status(ctx):
         embed.add_field(name=lang['status.embed.field.perms'], value=perms, inline=True)
         exts = ">>> "
         for ext in bot.extensions:
-            exts += ext.replace("cmds.", "")+'\n'
+            exts += ext.replace("cmds.", "") + '\n'
         embed.add_field(name=lang['status.embed.field.exts'], value=exts, inline=True)
         embed.add_field(name=lang['status.embed.uptime'], value=f">>> <t:{int(start_time.timestamp())}:R>\n{version}", inline=False)
         await ctx.send(embed=embed)
@@ -229,16 +229,18 @@ async def on_command_error(ctx, error):
     embed = discord.Embed(title="Error", description=str(error))
     embed.set_author(name=ctx.author.name, icon_url=ctx.author.display_avatar.url)
     embed.add_field(name="Context", value=ctx.message.clean_content)
-    if type(ctx.channel) == discord.channel.TextChannel:
-        embed.add_field(name="Channel", value=ctx.guild.name+'/'+ctx.channel.name)
+    if isinstance(ctx.channel, discord.channel.TextChannel):
+        embed.add_field(name="Channel", value=ctx.guild.name + '/' + ctx.channel.name)
     if ctx.command in bot.commands:
-        await owner.send(embed=embed)
         logger.error(f"[command_error]message: {ctx.message.clean_content}")
         logger.error(f"[command_error]error: {error}")
-        traceback_lines = traceback.format_exception(type(error), error, error.__traceback__)
+        traceback_lines = error.__traceback__
+        traceback_text = '\n'.join(traceback_lines)
+        embed.add_field(name="Traceback", value=f"```{traceback_text}```")
+        await owner.send(embed=embed)
         traceback_text = ''.join(traceback_lines)
         logger.error(f"[command_error]{traceback_text}")
-        
+
 
 if __name__ == "__main__":
     try:
